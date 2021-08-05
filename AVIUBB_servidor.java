@@ -277,7 +277,7 @@ class AVIUBB_servidor extends Thread {
                                         else{clientSentence="El servidor no posee mensajes registrados hasta el momento";}
                                                 cliente.send(clientSentence);
                                     }  
-                                else if(clientSentence.equals("TOTAL_RECADOS") && ver == true){ 
+                                else if(clientSentence.startsWith("TOTAL_RECADOS") && ver == true){ 
 
                                     String[]  parts = clientSentence.split(" ");
                                     int contador=0;
