@@ -130,6 +130,16 @@ class AVIUBB_servidor extends Thread {
         return str;
     }
 
+    public String getStringLast(){
+	    Enumeration lista = clientes.elements();
+	    String str = "";
+	    while(lista.hasMoreElements()){
+			Cliente cliente = (Cliente) lista.nextElement();
+			str= cliente.getNombre();
+		}
+        return str;
+    }
+
     public void broadcast(Cliente origen, String mensaje){
         Enumeration otros = clientes.elements();
         while(otros.hasMoreElements()){
@@ -206,7 +216,7 @@ class AVIUBB_servidor extends Thread {
         			            			clientSentence = clientSentence + "RENAME <nombre> (Cambia tu nombre).\n";
 		        				            clientSentence = clientSentence + "PRIVATE <nombre> <texto>(envia <texto> a un usuario.)\n";
             	        					clientSentence = clientSentence + "ALL <texto> (envia <texto> a todos)\n";
-			                    			clientSentence = clientSentence + "SHOW (muestra mi nombre)\n";
+			                    			clientSentence = clientSentence + "SHOW (muestra mi nombre)\n"; //Diego si eliminaste Show trata de mostrar un comentario
                                             clientSentence = clientSentence + "FIN (Dejar el servicio)\n";
                                             clientSentence = clientSentence + "Ejemplo:\n";
                         				    clientSentence = clientSentence + "PRIVATE Pedro Hola (envia el mensaje \"hola\" al usuario registrado como Pedro)\n";
@@ -220,8 +230,7 @@ class AVIUBB_servidor extends Thread {
                                     else cliente.send(ERROR_COMANDO+":"+clientSentence);
             						
 			            		}
-                                else{
-                                    if(clientSentence.startsWith("DEJAR_RECADO") && ver == true){
+                                else if(clientSentence.startsWith("DEJAR_RECADO") && ver == true){
                                 		String[]  parts = clientSentence.split(" ");
                                         if(parts.length > 2) {
                                             int index = clientSentence.indexOf(parts[2]);
@@ -233,55 +242,77 @@ class AVIUBB_servidor extends Thread {
                                         else{
                 						    cliente.send(ERROR_PRIVATE+":"+clientSentence);
 						                }
-	                                }
-                                    else{
-                                        if(clientSentence.startsWith("CONSULTAR_RECADO") && ver == true){
+	                            }
+                                else if(clientSentence.startsWith("CONSULTAR_RECADO") && ver == true){
                                         
-                                            String[]  parts = clientSentence.split(" ");
+                                        String[]  parts = clientSentence.split(" ");
                                         
-                                            if(parts.length > 1) {
+                                        if(parts.length > 1) {
                                             
-                                                String usuarioc = parts[1].trim();
-                                                for (int i = 0; i < mensajelista.length; i++){
-                                                    if(mensajelista[i].startsWith(usuarioc+"/X/x")){
-                                                        String[] recado = mensajelista[i].split("/X/x");
-                                                        clientSentence = recado[1].trim();
-                                                        cliente.send(clientSentence);
-                                                    }
+                                        String usuarioc = parts[1].trim();
+                                        
+                                        for (int i = 0; i < mensajelista.length; i++){
+                                            if(mensajelista[i].startsWith(usuarioc+"/X/x")){
+                                                    String[] recado = mensajelista[i].split("/X/x");
+                                                    clientSentence = recado[1].trim();
+                                                    cliente.send(clientSentence);
                                                 }
-					                        }
-                                            else{
-                					            cliente.send(ERROR_PRIVATE+":"+clientSentence);
-			                                }
-                					    }
-                                        else{
-                                            if(clientSentence.equals("ULTIMO") && ver == true){
-                                                //system.out.println(idleCliente.getDateDiff(new Timestamp(System.currentTimeMillis())));
                                             }
-				                            else{
-                                                if(clientSentence.equals("LIST") && ver == true){
+					                    }
+                                        else{
+                					        cliente.send(ERROR_PRIVATE+":"+clientSentence);
+			                                }
+                				}
+                                else if(clientSentence.equals("ULTIMO") && ver == true){
+                                                  //system.out.println(idleCliente.getDateDiff(new Timestamp(System.currentTimeMillis())));
+                                      }
+				                else if(clientSentence.equals("LIST") && ver == true){
                             					   clientSentence = "Lista de seudonimos:\n"+getString();
 		        			                       cliente.send(clientSentence);
                             					}
-                                                else{
-                                                    if(clientSentence.equals("x") && ver == true){
-                                                        //system.out.println(idleCliente.getDateDiff(new Timestamp(System.currentTimeMillis())));
-                                                    }
-                                                    else{
-                                                        if(clientSentence.equals("FIN") && ver == true){
-                                                            cliente.send(QUIT);
-                                                            remove(cliente);
-                                                        }
-                                                        else{
-                                                            if(ver == false) cliente.send("DEBE INGRESAR UN USUARIO");
-                                                            else cliente.send(ERROR_COMANDO+":"+clientSentence);
-                                                        } 
-                                                    }
-                                                }
-                                            }
-                                        }
+                                else if(clientSentence.equals("MENSAJE_MAS_ANTIGUO") && ver == true){ //MENSAJE MAS ANTIGUO (TOTAL NO DE UN USUARIO)
+                                    if(mensajelista.length>=1){
+                                            clientSentence="El mensaje mas antiguo es "+mensajelista[0];
                                     }
+                                        else{clientSentence="El servidor no posee mensajes registrados hasta el momento";}
+                                                cliente.send(clientSentence);
+                                    }  
+                                else if(clientSentence.equals("TOTAL_RECADOS") && ver == true){ 
+
+                                    String[]  parts = clientSentence.split(" ");
+                                    int contador=0;
+                                    System.out.println("PASO AQUI");
+                                        
+                                    if(parts.length > 1) {
+
+                                            String usuarioc = parts[1].trim();
+
+                                            for (int i = 0; i < mensajelista.length; i++){
+                                                    if(mensajelista[i].startsWith(usuarioc+"/X/x")){
+                                                        contador++;
+                                                    }
+                                            }
+                                                                
+                                            clientSentence="la cantidad de recados de "+usuarioc+" es:"+contador;
+                                            cliente.send(clientSentence); 
+                                            }
+
                                 }
+                                else if(clientSentence.equals("FIN") && ver == true){
+                                    cliente.send(QUIT);
+                                    remove(cliente);
+                                    }
+                                    else{
+                                        if(ver == false) cliente.send("DEBE INGRESAR UN USUARIO");
+                                            else cliente.send(ERROR_COMANDO+":"+clientSentence);
+                                    } 
+                                                        
+                                                    
+                                                
+                                            
+                                    
+                                    
+                                
                             }
 				        }
 			        } 
