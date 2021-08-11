@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 
 class Cliente{
     public static String EOL ="\\r\\n";
-    private static int id = 0;
+    //private static int id = 0;
 	private String cid;
 	private Socket socket;
 	private BufferedReader reader;
@@ -21,7 +21,7 @@ class Cliente{
 		socket = s;
 		reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
     	  writer = new PrintWriter(s.getOutputStream(), true);
-		cid = "Usuario_"+(++id);
+		cid = "Usuario sin nombre";
         setTimeStamp();
 	}
 
@@ -92,7 +92,8 @@ class Cliente{
 class AVIUBB_servidor extends Thread {
 	private Hashtable<String,Cliente> clientes;
     public static String mensajelista[] = {};
- 	private boolean ready, ver;
+    public static String ultimo_r[] = {"x", "x"};
+ 	private boolean ready;
 	public static String ERROR_COMANDO = "401: No se reconoce comando o bien esta incompleto.";
     public static String ERROR_DESTINATION = "402: No se reconoce destino.";
     public static String ERROR_PRIVATE = "403: No se reconoce formato mensaje PRIVATE.";
@@ -102,7 +103,6 @@ class AVIUBB_servidor extends Thread {
     
     public AVIUBB_servidor(){
       	ready = false;
-        ver = false;
       	clientes = new Hashtable<String,Cliente>();
     }
 
@@ -213,7 +213,11 @@ class AVIUBB_servidor extends Thread {
                                             cliente.setNombre(newNombre);
                                             clientes.put(newNombre, cliente);
                                             cliente.send(SUCCESS_COMANDO);
-                                            ver = true;
+                                            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");  //dia mes fecha 
+                                            LocalDateTime now = LocalDateTime.now();  
+                                            String fecha_y_hora=dtf.format(now);
+                                            ultimo_r[0] = cliente.getNombre();
+                                            ultimo_r[1] = fecha_y_hora;
                                             clientSentence ="Lista de comandos:\nLIST (Nombre usuarios online).\n";
         			            			clientSentence = clientSentence + "RENAME <nombre> (Cambia tu nombre).\n";
 		        				            clientSentence = clientSentence + "PRIVATE <nombre> <texto>(envia <texto> a un usuario.)\n";
@@ -232,7 +236,7 @@ class AVIUBB_servidor extends Thread {
                                     else cliente.send(ERROR_COMANDO+":"+clientSentence);
             						
 			            		}
-                                else if(clientSentence.startsWith("DEJAR_RECADO") && ver == true){
+                                else if(clientSentence.startsWith("DEJAR_RECADO") && cliente.getNombre() != "Usuario sin nombre"){
                                 		String[]  parts = clientSentence.split(" ");
                                         if(parts.length > 2) {
                                             int index = clientSentence.indexOf(parts[2]);
@@ -245,7 +249,7 @@ class AVIUBB_servidor extends Thread {
                 						    cliente.send(ERROR_PRIVATE+":"+clientSentence);
 						                }
 	                            }
-                                else if(clientSentence.startsWith("CONSULTAR_RECADO") && ver == true){
+                                else if(clientSentence.startsWith("CONSULTAR_RECADO") &&  cliente.getNombre() != "Usuario sin nombre"){
                                         
                                         String[]  parts = clientSentence.split(" ");
                                         
@@ -265,25 +269,22 @@ class AVIUBB_servidor extends Thread {
                 					        cliente.send(ERROR_PRIVATE+":"+clientSentence);
 			                                }
                 				}               
-                                else if(clientSentence.equals("ULTIMO") && ver == true){ //                                funcionalidad construida por Esteban Risopatrón
-                                         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");  //dia mes fecha 
-                                         LocalDateTime now = LocalDateTime.now();  
-                                         String fecha_y_hora=dtf.format(now);
-                                         clientSentence="La fecha y la hora son:"+fecha_y_hora;
+                                else if(clientSentence.equals("ULTIMO") && cliente.getNombre() != "Usuario sin nombre"){ //                                funcionalidad construida por Esteban Risopatrón
+                                         clientSentence="Ultimo usuario:\n"+ultimo_r[0]+" "+ultimo_r[1];
                                          cliente.send(clientSentence);
                                       }
-				                else if(clientSentence.equals("LIST") && ver == true){
+				                else if(clientSentence.equals("LISTA") && cliente.getNombre() != "Usuario sin nombre"){
                             					   clientSentence = "Lista de seudonimos:\n"+getString();
 		        			                       cliente.send(clientSentence);
                             					}
-                                else if(clientSentence.equals("MENSAJE_MAS_ANTIGUO") && ver == true){ //MENSAJE MAS ANTIGUO (TOTAL NO DE UN USUARIO)
+                                else if(clientSentence.equals("MENSAJE_MAS_ANTIGUO") && cliente.getNombre() != "Usuario sin nombre"){ //MENSAJE MAS ANTIGUO (TOTAL NO DE UN USUARIO)
                                     if(mensajelista.length>=1){                                                  //funcionalidad creada por Esteban Risopatrón
                                             clientSentence="El mensaje mas antiguo es "+mensajelista[0];
                                     }
                                         else{clientSentence="El servidor no posee mensajes registrados hasta el momento";}
                                                 cliente.send(clientSentence);
                                     }  
-                                else if(clientSentence.startsWith("TOTAL_RECADOS") && ver == true){ 
+                                else if(clientSentence.startsWith("TOTAL_RECADOS") && cliente.getNombre() != "Usuario sin nombre"){ 
 
                                     String[]  parts = clientSentence.split(" ");
                                     int contador=0;
@@ -304,20 +305,14 @@ class AVIUBB_servidor extends Thread {
                                             }
 
                                 }
-                                else if(clientSentence.equals("FIN") && ver == true){
+                                else if(clientSentence.equals("FIN") && cliente.getNombre() != "Usuario sin nombre"){
                                     cliente.send(QUIT);
                                     remove(cliente);
                                     }
                                     else{
-                                        if(ver == false) cliente.send("DEBE INGRESAR UN USUARIO");
+                                        if(cliente.getNombre() == "Usuario sin nombre") cliente.send("DEBE INGRESAR UN USUARIO");
                                             else cliente.send(ERROR_COMANDO+":"+clientSentence);
-                                    } 
-                                                        
-                                                    
-                                                
-                                            
-                                    
-                                    
+                                    }     
                                 
                             }
 				        }
