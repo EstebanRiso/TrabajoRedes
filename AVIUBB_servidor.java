@@ -5,6 +5,8 @@ import java.sql.Timestamp;
 import java.util.Enumeration;
 import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 class Cliente{
     public static String EOL ="\\r\\n";
@@ -262,16 +264,20 @@ class AVIUBB_servidor extends Thread {
                                         else{
                 					        cliente.send(ERROR_PRIVATE+":"+clientSentence);
 			                                }
-                				}
-                                else if(clientSentence.equals("ULTIMO") && ver == true){
-                                                  //system.out.println(idleCliente.getDateDiff(new Timestamp(System.currentTimeMillis())));
+                				}               
+                                else if(clientSentence.equals("ULTIMO") && ver == true){ //                                funcionalidad construida por Esteban Risopatrón
+                                         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");  //dia mes fecha 
+                                         LocalDateTime now = LocalDateTime.now();  
+                                         String fecha_y_hora=dtf.format(now);
+                                         clientSentence="La fecha y la hora son:"+fecha_y_hora;
+                                         cliente.send(clientSentence);
                                       }
 				                else if(clientSentence.equals("LIST") && ver == true){
                             					   clientSentence = "Lista de seudonimos:\n"+getString();
 		        			                       cliente.send(clientSentence);
                             					}
                                 else if(clientSentence.equals("MENSAJE_MAS_ANTIGUO") && ver == true){ //MENSAJE MAS ANTIGUO (TOTAL NO DE UN USUARIO)
-                                    if(mensajelista.length>=1){
+                                    if(mensajelista.length>=1){                                                  //funcionalidad creada por Esteban Risopatrón
                                             clientSentence="El mensaje mas antiguo es "+mensajelista[0];
                                     }
                                         else{clientSentence="El servidor no posee mensajes registrados hasta el momento";}
