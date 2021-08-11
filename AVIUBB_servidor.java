@@ -10,7 +10,6 @@ import java.time.format.DateTimeFormatter;
 
 class Cliente{
     public static String EOL ="\\r\\n";
-    //private static int id = 0;
 	private String cid;
 	private Socket socket;
 	private BufferedReader reader;
@@ -20,8 +19,8 @@ class Cliente{
 	Cliente(Socket s) throws IOException{
 		socket = s;
 		reader = new BufferedReader(new InputStreamReader(s.getInputStream()));
-    	  writer = new PrintWriter(s.getOutputStream(), true);
-		cid = "Usuario sin nombre";
+    	writer = new PrintWriter(s.getOutputStream(), true);
+		cid = "Usuario sin nombre"; // no se puede usar servidor con ese nombre
         setTimeStamp();
 	}
 
@@ -86,20 +85,16 @@ class Cliente{
         return TimeUnit.MINUTES.convert(diffInMS, TimeUnit.MILLISECONDS);
     }
 }
-/*public class globales {
-    public static ArrayList<String> mensajelista;
-}*/
 class AVIUBB_servidor extends Thread {
 	private Hashtable<String,Cliente> clientes;
-    public static String mensajelista[] = {};
-    public static String ultimo_r[] = {"x", "x"};
+    public static String mensajelista[] = {}; // lista en la que se guarda mensajes, con su destinatario y emisor
+    public static String ultimo_r[] = {"x", "x"}; // lista donde se guarda el usuario ingresado, junto con la fecha y hora
  	private boolean ready;
 	public static String ERROR_COMANDO = "401: No se reconoce comando o bien esta incompleto.";
-    public static String ERROR_DESTINATION = "402: No se reconoce destino.";
-    public static String ERROR_PRIVATE = "403: No se reconoce formato mensaje PRIVATE.";
+    public static String ERROR_FORMATO = "403: No se reconoce formato mensaje.";
     public static String ERROR_NOMBRE = "404: Otro usuario tiene el mismo pseudonimo, escoja otro.";
-    public static String SUCCESS_COMANDO = "200: OK.";
-    public static String QUIT = "201: Goodbye.";
+    public static String COMANDO_CORRECTO = "200: OK.";
+    public static String SALIR = "201: Adios.";
     
     public AVIUBB_servidor(){
       	ready = false;
@@ -174,7 +169,7 @@ class AVIUBB_servidor extends Thread {
         }
     }
     
-    public static String[] add_element(int n, String array[], String recado) 
+    public static String[] add_element(int n, String array[], String recado) //funcion para agregar mensajes a la lista
     { 
         int i; 
  
@@ -199,21 +194,20 @@ class AVIUBB_servidor extends Thread {
 				        if(cliente.ready()){
                             cliente.setTimeStamp();
 				            clientSentence = cliente.receive().trim();
-				            //System.out.println("LOG Datos recibidos:"+clientSentence+" desde "+ cliente.getNombre());
                             if(clientSentence==null){
                                 removeIdleClient(cliente);
                             }
                             else{
-                                if(clientSentence.startsWith("NUEVO_USUARIO")){
-                                    String[] parts = clientSentence.split(" ");
+                                if(clientSentence.startsWith("NUEVO_USUARIO")){ // se crea el usuario, guardando su nombre y la fecha de ingreso
+                                    String[] parts = clientSentence.split(" "); // funcion creada por Diego Ramirez
                                     if(parts.length >1){
                                         String newNombre = parts[1].trim();
                                         if(!clientes.containsKey(newNombre)){
                                             clientes.remove(cliente.getNombre());
                                             cliente.setNombre(newNombre);
                                             clientes.put(newNombre, cliente);
-                                            cliente.send(SUCCESS_COMANDO);
-                                            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");  //dia mes fecha 
+                                            cliente.send(COMANDO_CORRECTO);
+                                            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");  //dia : mes : año 
                                             LocalDateTime now = LocalDateTime.now();  
                                             String fecha_y_hora=dtf.format(now);
                                             ultimo_r[0] = cliente.getNombre();
@@ -222,7 +216,7 @@ class AVIUBB_servidor extends Thread {
         			            			clientSentence = clientSentence + "RENAME <nombre> (Cambia tu nombre).\n";
 		        				            clientSentence = clientSentence + "PRIVATE <nombre> <texto>(envia <texto> a un usuario.)\n";
             	        					clientSentence = clientSentence + "ALL <texto> (envia <texto> a todos)\n";
-			                    			clientSentence = clientSentence + "SHOW (muestra mi nombre)\n"; //Diego si eliminaste Show trata de mostrar un comentario
+			                    			clientSentence = clientSentence + "LISTA (Nombre usuarios online).\n";
                                             clientSentence = clientSentence + "FIN (Dejar el servicio)\n";
                                             clientSentence = clientSentence + "Ejemplo:\n";
                         				    clientSentence = clientSentence + "PRIVATE Pedro Hola (envia el mensaje \"hola\" al usuario registrado como Pedro)\n";
@@ -236,8 +230,8 @@ class AVIUBB_servidor extends Thread {
                                     else cliente.send(ERROR_COMANDO+":"+clientSentence);
             						
 			            		}
-                                else if(clientSentence.startsWith("DEJAR_RECADO") && cliente.getNombre() != "Usuario sin nombre"){
-                                		String[]  parts = clientSentence.split(" ");
+                                else if(clientSentence.startsWith("DEJAR_RECADO") && cliente.getNombre() != "Usuario sin nombre"){ // se guarda el mensaje, destinatario y emisor, al servidor
+                                		String[]  parts = clientSentence.split(" ");                                               // funcion creada por Diego Ramirez
                                         if(parts.length > 2) {
                                             int index = clientSentence.indexOf(parts[2]);
                                             String destino = parts[1].trim();
@@ -246,19 +240,17 @@ class AVIUBB_servidor extends Thread {
                                                         
 					                    }
                                         else{
-                						    cliente.send(ERROR_PRIVATE+":"+clientSentence);
+                						    cliente.send(ERROR_FORMATO+":"+clientSentence);
 						                }
 	                            }
-                                else if(clientSentence.startsWith("CONSULTAR_RECADO") &&  cliente.getNombre() != "Usuario sin nombre"){
-                                        
+                                else if(clientSentence.startsWith("CONSULTAR_RECADO") &&  cliente.getNombre() != "Usuario sin nombre"){ // se hace un recorrido en la lista de los mensajes, seleccionando los del usuario seleccionado
+                                                                                                                                        // funcion creada por Diego Ramirez
                                         String[]  parts = clientSentence.split(" ");
-                                        
                                         if(parts.length > 1) {
-                                            
-                                        String usuarioc = parts[1].trim();
+                                            String usuarioc = parts[1].trim();
                                         
-                                        for (int i = 0; i < mensajelista.length; i++){
-                                            if(mensajelista[i].startsWith(usuarioc+"/X/x")){
+                                            for (int i = 0; i < mensajelista.length; i++){
+                                                if(mensajelista[i].startsWith(usuarioc+"/X/x")){
                                                     String[] recado = mensajelista[i].split("/X/x");
                                                     clientSentence = recado[1].trim();
                                                     cliente.send(clientSentence);
@@ -266,10 +258,10 @@ class AVIUBB_servidor extends Thread {
                                             }
 					                    }
                                         else{
-                					        cliente.send(ERROR_PRIVATE+":"+clientSentence);
-			                                }
+                					        cliente.send(ERROR_FORMATO+":"+clientSentence);
+			                            }
                 				}               
-                                else if(clientSentence.equals("ULTIMO") && cliente.getNombre() != "Usuario sin nombre"){ //                                funcionalidad construida por Esteban Risopatrón
+                                else if(clientSentence.equals("ULTIMO") && cliente.getNombre() != "Usuario sin nombre"){ // funcionalidad construida por Esteban Risopatrón
                                          clientSentence="Ultimo usuario:\n"+ultimo_r[0]+" "+ultimo_r[1];
                                          cliente.send(clientSentence);
                                       }
@@ -278,8 +270,9 @@ class AVIUBB_servidor extends Thread {
 		        			                       cliente.send(clientSentence);
                             					}
                                 else if(clientSentence.equals("MENSAJE_MAS_ANTIGUO") && cliente.getNombre() != "Usuario sin nombre"){ //MENSAJE MAS ANTIGUO (TOTAL NO DE UN USUARIO)
-                                    if(mensajelista.length>=1){                                                  //funcionalidad creada por Esteban Risopatrón
-                                            clientSentence="El mensaje mas antiguo es "+mensajelista[0];
+                                    if(mensajelista.length>=1){ //funcionalidad creada por Esteban Risopatrón
+                                            String[] antiguo = mensajelista[0].split("/X/x");                                        
+                                            clientSentence="El mensaje mas antiguo es "+antiguo[0]+" "+antiguo[1];
                                     }
                                         else{clientSentence="El servidor no posee mensajes registrados hasta el momento";}
                                                 cliente.send(clientSentence);
@@ -288,30 +281,25 @@ class AVIUBB_servidor extends Thread {
 
                                     String[]  parts = clientSentence.split(" ");
                                     int contador=0;
-                                    System.out.println("PASO AQUI");
                                         
                                     if(parts.length > 1) {
-
                                             String usuarioc = parts[1].trim();
-
                                             for (int i = 0; i < mensajelista.length; i++){
                                                     if(mensajelista[i].startsWith(usuarioc+"/X/x")){
                                                         contador++;
                                                     }
-                                            }
-                                                                
+                                            }                
                                             clientSentence="la cantidad de recados de "+usuarioc+" es:"+contador;
                                             cliente.send(clientSentence); 
                                             }
-
                                 }
-                                else if(clientSentence.equals("FIN") && cliente.getNombre() != "Usuario sin nombre"){
-                                    cliente.send(QUIT);
-                                    remove(cliente);
+                                else if(clientSentence.equals("FIN") && cliente.getNombre() != "Usuario sin nombre"){ // se envía un mensaje al cliente para salir del servidor
+                                        cliente.send(SALIR);                                                          // funcion creada por Diego Ramirez
+                                        remove(cliente);
                                     }
                                     else{
                                         if(cliente.getNombre() == "Usuario sin nombre") cliente.send("DEBE INGRESAR UN USUARIO");
-                                            else cliente.send(ERROR_COMANDO+":"+clientSentence);
+                                        else cliente.send(ERROR_COMANDO+":"+clientSentence);
                                     }     
                                 
                             }
