@@ -60,7 +60,10 @@ class AVIUBB_cliente extends Thread{
         AVIUBB_cliente cliente = new AVIUBB_cliente();
         int index;
         String c;
-	    //System.out.println("Se ha conectado con exito, por favor escriba un mensaje: ");
+	    System.out.println("Se ha conectado con exito al servidor");
+        System.out.prinln("porfavor ingrese un usuario con NUEVO_USUARIO <nombre>: ");      //Mensaje de alerta que indica el uso inicial y la conexion al servidor 
+                                                                                            // Esteban Risopatron
+
 	    while(!cliente.getStop()){
             c = cliente.getReader().readLine();
             index = c.indexOf(EOL);

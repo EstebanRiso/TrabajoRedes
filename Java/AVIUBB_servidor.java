@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.io.FileReader;
 
 class Cliente{
     public static String EOL ="\\r\\n";
@@ -145,6 +146,15 @@ class AVIUBB_servidor extends Thread {
         }
     }
 
+    public boolean checkUsuario(String sentencia){
+        FileReader reader = new FileReader("Log.txt");
+        return true;
+    }
+
+    public void escribirlog(String log[]){
+
+    }
+
     public boolean transmit(String destino, String mensaje){
         Cliente dst = clientes.get(destino);
         if(dst!=null) dst.send(mensaje);
@@ -169,7 +179,7 @@ class AVIUBB_servidor extends Thread {
         }
     }
     
-    public static String[] add_element(int n, String array[], String recado) //funcion para agregar mensajes a la lista
+    public static String[] add_element(int n, String array[], String recado) //funcion para agregar mensajes a la lista creada por Diego Ramirez
     { 
         int i; 
  
@@ -198,7 +208,7 @@ class AVIUBB_servidor extends Thread {
                                 removeIdleClient(cliente);
                             }
                             else{
-                                if(clientSentence.startsWith("NUEVO_USUARIO")){ // se crea el usuario, guardando su nombre y la fecha de ingreso
+                                if(clientSentence.startsWith("NUEVO_USUARIO") || checkUsuario(clientSentence)==true   ){ // se crea el usuario, guardando su nombre y la fecha de ingreso
                                     String[] parts = clientSentence.split(" "); // funcion creada por Diego Ramirez
                                     if(parts.length >1){
                                         String newNombre = parts[1].trim();
@@ -206,20 +216,21 @@ class AVIUBB_servidor extends Thread {
                                             clientes.remove(cliente.getNombre());
                                             cliente.setNombre(newNombre);
                                             clientes.put(newNombre, cliente);
-                                            cliente.send(COMANDO_CORRECTO);
+                                            cliente.send(COMANDO_CORRECTO);   
+                                            //fechas de date time para usarlas en la funcion de ULTIMO creada por Esteban Risopatron
                                             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");  //dia : mes : año 
                                             LocalDateTime now = LocalDateTime.now();  
                                             String fecha_y_hora=dtf.format(now);
                                             ultimo_r[0] = cliente.getNombre();
-                                            ultimo_r[1] = fecha_y_hora;
-                                            clientSentence ="Lista de comandos:\nLIST (Nombre usuarios online).\n";
-        			            			clientSentence = clientSentence + "RENAME <nombre> (Cambia tu nombre).\n";
-		        				            clientSentence = clientSentence + "PRIVATE <nombre> <texto>(envia <texto> a un usuario.)\n";
-            	        					clientSentence = clientSentence + "ALL <texto> (envia <texto> a todos)\n";
+                                            ultimo_r[1] = fecha_y_hora;                                                                                         //aqui se mandan las instrucciones para que el 
+                                                                                                                                                                //usuario sepa como usar el programa- creado por Esteban Risopatron
+        			            			clientSentence = clientSentence + "DEJAR_RECADO <nombre> <texto> (Cambia tu nombre).\n";
+		        				            clientSentence = clientSentence + "CONSULTAR_RECADO <nombre> (consulta el recado dado un nombre de usuario)\n";
+            	        					clientSentence = clientSentence + "ULTIMO  (genera fecha y hora del ultimo que ingreso al servidor)\n";
 			                    			clientSentence = clientSentence + "LISTA (Nombre usuarios online).\n";
+                                            clientSentence = clientSentence + "MENSAJE_MAS_ANTIGUO (Nombre usuarios online).\n";
+                                            clientSentence = clientSentence + "TOTAL_RECADOS <nombre> (Contabiliza cuantos recados tiene tal usuario).\n";
                                             clientSentence = clientSentence + "FIN (Dejar el servicio)\n";
-                                            clientSentence = clientSentence + "Ejemplo:\n";
-                        				    clientSentence = clientSentence + "PRIVATE Pedro Hola (envia el mensaje \"hola\" al usuario registrado como Pedro)\n";
 				                    		clientSentence = clientSentence + "Precaucion!!: Servidor diferencia entre letras mayusculas y minusculas\n";
             			        			cliente.send(clientSentence);
                                         }
@@ -261,7 +272,8 @@ class AVIUBB_servidor extends Thread {
                 					        cliente.send(ERROR_FORMATO+":"+clientSentence);
 			                            }
                 				}               
-                                else if(clientSentence.equals("ULTIMO") && cliente.getNombre() != "Usuario sin nombre"){ // funcionalidad construida por Esteban Risopatrón
+                                else if(clientSentence.equals("ULTIMO") && cliente.getNombre() != "Usuario sin nombre"){    // nos dice la hora,dia y fecha registrada por el ultimo que ingreso al servidor (en la sesión)
+                                                                                                                                // funcionalidad construida por Esteban Risopatron
                                          clientSentence="Ultimo usuario:\n"+ultimo_r[0]+" "+ultimo_r[1];
                                          cliente.send(clientSentence);
                                       }
@@ -270,7 +282,7 @@ class AVIUBB_servidor extends Thread {
 		        			                       cliente.send(clientSentence);
                             					}
                                 else if(clientSentence.equals("MENSAJE_MAS_ANTIGUO") && cliente.getNombre() != "Usuario sin nombre"){ //MENSAJE MAS ANTIGUO (TOTAL NO DE UN USUARIO)
-                                    if(mensajelista.length>=1){ //funcionalidad creada por Esteban Risopatrón
+                                    if(mensajelista.length>=1){                                                                         //funcionalidad creada por Esteban Risopatrón
                                             String[] antiguo = mensajelista[0].split("/X/x");                                        
                                             clientSentence="El mensaje mas antiguo es "+antiguo[0]+" "+antiguo[1];
                                     }
@@ -296,6 +308,9 @@ class AVIUBB_servidor extends Thread {
                                 else if(clientSentence.equals("FIN") && cliente.getNombre() != "Usuario sin nombre"){ // se envía un mensaje al cliente para salir del servidor
                                         cliente.send(SALIR);                                                          // funcion creada por Diego Ramirez
                                         remove(cliente);
+                                        
+
+
                                     }
                                     else{
                                         if(cliente.getNombre() == "Usuario sin nombre") cliente.send("DEBE INGRESAR UN USUARIO");
