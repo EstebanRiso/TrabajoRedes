@@ -146,15 +146,6 @@ class AVIUBB_servidor extends Thread {
         }
     }
 
-    public boolean checkUsuario(String sentencia){
-        FileReader reader = new FileReader("Log.txt");
-        return true;
-    }
-
-    public void escribirlog(String log[]){
-
-    }
-
     public boolean transmit(String destino, String mensaje){
         Cliente dst = clientes.get(destino);
         if(dst!=null) dst.send(mensaje);
@@ -208,7 +199,7 @@ class AVIUBB_servidor extends Thread {
                                 removeIdleClient(cliente);
                             }
                             else{
-                                if(clientSentence.startsWith("NUEVO_USUARIO") || checkUsuario(clientSentence)==true   ){ // se crea el usuario, guardando su nombre y la fecha de ingreso
+                                if(clientSentence.startsWith("NUEVO_USUARIO") ){ // se crea el usuario, guardando su nombre y la fecha de ingreso
                                     String[] parts = clientSentence.split(" "); // funcion creada por Diego Ramirez
                                     if(parts.length >1){
                                         String newNombre = parts[1].trim();
@@ -332,7 +323,7 @@ class AVIUBB_servidor extends Thread {
 
     public static void main(String argv[]) throws Exception{
 
-        ServerSocket welcomeSocket = new ServerSocket(10987);
+        ServerSocket welcomeSocket = new ServerSocket(20011);
 
         boolean run = true;
         AVIUBB_servidor server = new AVIUBB_servidor();

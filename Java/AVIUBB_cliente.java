@@ -11,7 +11,7 @@ class AVIUBB_cliente extends Thread{
 
     public AVIUBB_cliente() throws Exception{
 
-        clientSocket = new Socket("127.0.0.1", 10987);
+        clientSocket = new Socket("146.83.194.142", 20011);
         outToServer = new PrintWriter(clientSocket.getOutputStream(), true);
         inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         inFromUser = new BufferedReader(new InputStreamReader(System.in));
@@ -61,7 +61,7 @@ class AVIUBB_cliente extends Thread{
         int index;
         String c;
 	    System.out.println("Se ha conectado con exito al servidor");
-        System.out.prinln("porfavor ingrese un usuario con NUEVO_USUARIO <nombre>: ");      //Mensaje de alerta que indica el uso inicial y la conexion al servidor 
+        System.out.println("porfavor ingrese un usuario con NUEVO_USUARIO <nombre>: ");      //Mensaje de alerta que indica el uso inicial y la conexion al servidor 
                                                                                             // Esteban Risopatron
 
 	    while(!cliente.getStop()){
