@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.io.FileReader;
 
 class Cliente{
     public static String EOL ="\\r\\n";
@@ -209,7 +208,7 @@ class AVIUBB_servidor extends Thread {
                                             clientes.put(newNombre, cliente);
                                             cliente.send(COMANDO_CORRECTO);   
                                             //fechas de date time para usarlas en la funcion de ULTIMO creada por Esteban Risopatron
-                                            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");  //dia : mes : año 
+                                            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");  //dia : mes : anio 
                                             LocalDateTime now = LocalDateTime.now();  
                                             String fecha_y_hora=dtf.format(now);
                                             ultimo_r[0] = cliente.getNombre();
@@ -263,7 +262,7 @@ class AVIUBB_servidor extends Thread {
                 					        cliente.send(ERROR_FORMATO+":"+clientSentence);
 			                            }
                 				}               
-                                else if(clientSentence.equals("ULTIMO") && cliente.getNombre() != "Usuario sin nombre"){    // nos dice la hora,dia y fecha registrada por el ultimo que ingreso al servidor (en la sesión)
+                                else if(clientSentence.equals("ULTIMO") && cliente.getNombre() != "Usuario sin nombre"){    // nos dice la hora,dia y fecha registrada por el ultimo que ingreso al servidor (en la sesion)
                                                                                                                                 // funcionalidad construida por Esteban Risopatron
                                          clientSentence="Ultimo usuario:\n"+ultimo_r[0]+" "+ultimo_r[1];
                                          cliente.send(clientSentence);
@@ -273,7 +272,7 @@ class AVIUBB_servidor extends Thread {
 		        			                       cliente.send(clientSentence);
                             					}
                                 else if(clientSentence.equals("MENSAJE_MAS_ANTIGUO") && cliente.getNombre() != "Usuario sin nombre"){ //MENSAJE MAS ANTIGUO (TOTAL NO DE UN USUARIO)
-                                    if(mensajelista.length>=1){                                                                         //funcionalidad creada por Esteban Risopatrón
+                                    if(mensajelista.length>=1){                                                                         //funcionalidad creada por Esteban Risopatron
                                             String[] antiguo = mensajelista[0].split("/X/x");                                        
                                             clientSentence="El mensaje mas antiguo es "+antiguo[0]+" "+antiguo[1];
                                     }
@@ -296,7 +295,7 @@ class AVIUBB_servidor extends Thread {
                                             cliente.send(clientSentence); 
                                             }
                                 }
-                                else if(clientSentence.equals("FIN") && cliente.getNombre() != "Usuario sin nombre"){ // se envía un mensaje al cliente para salir del servidor
+                                else if(clientSentence.equals("FIN") && cliente.getNombre() != "Usuario sin nombre"){ // se envia un mensaje al cliente para salir del servidor
                                         cliente.send(SALIR);                                                          // funcion creada por Diego Ramirez
                                         remove(cliente);
                                         
