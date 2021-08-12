@@ -53,3 +53,7 @@ usted crea el usuario e ingresa al servidor TCP.
 usar el programa.
 
 
+NOTA: todos los archivos ya estan compilados en el sistema en la carpeta 
+class, pero si de todas maneras quiere compilarlos de inicio a fin, 
+puede hacerlo sin ningun problema
+
